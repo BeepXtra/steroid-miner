@@ -16,12 +16,12 @@ if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
         eval $cmd
-        echo $newversion > 'version.txt'
+        #echo $newversion > 'version.txt'
         echo "Current version: "$newversion
         chmod 0755 update.sh
 else
         echo "No upgrade necessary."
-        #echo "Current version: "$currentversion
+        echo "Current version: "$currentversion
 fi
 
 #echo $newversion
