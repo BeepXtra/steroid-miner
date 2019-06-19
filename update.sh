@@ -18,7 +18,7 @@ then
         eval $cmd
         #echo $newversion > 'version.txt'
         echo "Current version: "$newversion
-        chmod 0755 update.sh
+        chmod 0755 *.sh
 else
         echo "No upgrade necessary."
         echo "Current version: "$currentversion
