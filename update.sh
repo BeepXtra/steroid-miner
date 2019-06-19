@@ -21,7 +21,7 @@ then
         chmod 0755 update.sh
 else
         echo "No upgrade necessary."
-        echo "Current version: "$currentversion
+        #echo "Current version: "$currentversion
 fi
 
 #echo $newversion
