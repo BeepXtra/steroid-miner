@@ -1,4 +1,5 @@
 #!/bin/bash
+#v4
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
         curl -s "$url" | egrep -m 1 '"version"' | awk -F '"' '{ print $4 }'
