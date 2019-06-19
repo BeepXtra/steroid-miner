@@ -1,20 +1,25 @@
 #!/bin/bash
 url='https://www.beepxtra.com/steroid-miner.json'
-#Get latest version
 newversion=$(
         curl -s "$url" | egrep -m 1 '"version"' | awk -F '"' '{ print $4 }'
 )
-#get upgrade command
 cmd=$(
         curl -s "$url" | egrep -m 1 '"cmd"' | awk -F '"' '{ print $4 }'
 )
-#current installed version
 currentversion=$(cat 'version.txt')
+update=$((newversion-currentversion))
+#echo $update
+#exit;
 
-#Check and execute upgrade if new version
-if($newversion > $currentversion){
+if [ "$update" -gt 0 ]
+then
+        echo "Upgrade necessary"
         eval $cmd
         echo $newversion > 'version.txt'
-}
-
+else
+        echo "No upgrade necessary."
+        echo "Current version: "$currentversion
+fi
+#echo $newversion
+#echo $cmd
 exit;
