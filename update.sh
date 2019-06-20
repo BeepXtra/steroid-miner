@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.2
+#v1.02.1
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
