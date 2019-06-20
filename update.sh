@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.1
+#v1.02.2
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 SHELL=/bin/sh
 
