@@ -1,6 +1,12 @@
 #!/bin/bash
 #v1.02.1
+HOME=/root
+LOGNAME=root
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+LANG=en_US.UTF-8
+SHELL=/bin/sh
+PWD=/root
+
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
         curl -s "$url" | egrep -m 1 '"version"' | awk -F '"' '{ print $4 }'
