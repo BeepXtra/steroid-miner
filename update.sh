@@ -18,7 +18,7 @@ update=$((newversion-currentversion))
 if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
-        eval echo \{$cmd}
+        eval echo $cmd
         #echo $cmd | /bin/sh
         #sudo echo $newversion > 'version.txt'
         echo "Current version: "$newversion
