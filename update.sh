@@ -1,11 +1,7 @@
 #!/bin/bash
-#v1.02.3
-HOME=/root
-LOGNAME=root
+#v1.02.1
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-LANG=en_US.UTF-8
 SHELL=/bin/sh
-PWD=/root
 
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
