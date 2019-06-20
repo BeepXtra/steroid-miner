@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.1
+#v1.02.2
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 SHELL=/bin/sh
 
@@ -18,7 +18,7 @@ update=$((newversion-currentversion))
 if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
-        eval echo \${$cmd}
+        eval echo \{$cmd}
         #echo $cmd | /bin/sh
         #sudo echo $newversion > 'version.txt'
         echo "Current version: "$newversion
