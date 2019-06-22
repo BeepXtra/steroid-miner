@@ -1,7 +1,19 @@
 #!/bin/bash
-#v1.02.2
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-SHELL=/bin/sh
+#v1.02.1
+LANG=en_GB.UTF-8
+XDG_VTRN=1
+XVD_SESSION_ID=c1
+HUSHLOGIN=FALSE
+USER=pi
+PWD=/home/pi
+HOME=/home/pi
+PATH=/home/pi/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+SHELL=/bin/bash
+TERM=linux
+SHLVL=1
+XDG_SEAT=seat0
+LOGNAME=pi
+XDG_RUNTIME_DIR=/run/user/1000
 
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
