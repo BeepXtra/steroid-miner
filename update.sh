@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.3
+#v1.02.1
 LANG=en_GB.UTF-8
 XDG_VTRN=1
 XVD_SESSION_ID=c1
@@ -30,8 +30,8 @@ update=$((newversion-currentversion))
 if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
-        eval $cmd
-        #echo $cmd | /bin/sh
+        #eval $cmd
+        echo $cmd | /bin/bash
         #sudo echo $newversion > 'version.txt'
         echo "Current version: "$newversion
         sudo chmod 0755 *.sh
