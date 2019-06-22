@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.2
+#v1.02.3
 LANG=en_GB.UTF-8
 XDG_VTRN=1
 XVD_SESSION_ID=c1
