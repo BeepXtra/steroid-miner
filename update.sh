@@ -31,6 +31,8 @@ if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
         #eval $cmd
+        sudo git reset --hard
+        sudo git pull
         echo $cmd | /bin/bash
         #sudo echo $newversion > 'version.txt'
         echo "Current version: "$newversion
