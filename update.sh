@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.02.21
+#v1.02.22
 
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
