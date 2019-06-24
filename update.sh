@@ -8,6 +8,7 @@ newversion=$(
 cmd=$(
         curl -s "$url" | egrep -m 1 '"cmd"' | awk -F '"' '{ print $4 }'
 )
+cd /home/steroid-miner/
 currentversion=$(cat 'version.txt')
 update=$((newversion-currentversion))
 #echo $update
