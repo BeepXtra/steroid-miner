@@ -1,3 +1,3 @@
 #!/bin/bash
-sleep 5s
+sleep 15s
 curl -s https://pool.steroid.io/minerrun.php
