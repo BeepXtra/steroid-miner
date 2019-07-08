@@ -1,6 +1,13 @@
 #!/bin/bash
 #v1.02.1
+wget -q --spider http://google.com
 
+if [ $? -eq 0 ]; then
+    echo "Internet connection is active"
+else
+    echo "No connection. Exiting"
+    exit;
+fi
 url='https://www.beepxtra.com/steroid-miner.json'
 newversion=$(
         curl -s "$url" | egrep -m 1 '"version"' | awk -F '"' '{ print $4 }'
