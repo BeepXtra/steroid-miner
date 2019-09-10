@@ -1,13 +1,13 @@
 #!/bin/bash
 #v1.02.1
 wget -q --spider http://google.com
-sudo chmod 0755 /home/beep-email.txt
 if [ $? -eq 0 ]; then
     echo "Internet connection is active"
 else
     echo "No connection. Exiting"
     exit;
 fi
+sudo chmod 0755 /home/beep-email.txt
 beepacct=$(head -n 1 /home/beep-email.txt)
 machineid=$(blkid | grep -oP 'UUID="\K[^"]+' | sha256sum | awk '{print $1}');
 url='https://www.beepxtra.com/steroid-miner.php?miner='$machineid'&beeper='$beepacct;
