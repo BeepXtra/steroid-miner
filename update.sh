@@ -8,19 +8,19 @@ else
     echo "No connection. Exiting"
     exit;
 fi
-url='https://www.beepxtra.com/steroid-miner.php'
-newversion=$(
-        curl -s "$url" | egrep -m 1 '"version"' | awk -F '"' '{ print $4 }'
-)
-cmd=$(
-        curl -s "$url" | egrep -m 1 '"cmd"' | awk -F '"' '{ print $4 }'
-)
+beepacct=$(head -n 1 /home/beep-email.txt)
+machineid=$(blkid | grep -oP 'UUID="\K[^"]+' | sha256sum | awk '{print $1}');
+url='https://www.beepxtra.com/steroid-miner.php?miner='$machineid'&beeper='$beepacct;
+minerupd=$(curl -s "$url");
+newversion=$(echo $minerupd | egrep -m 1 '"version"' | awk -F '"' '{ print $4}')
+cmd=$(echo $minerupd | egrep -m 1 '"cmd"' | awk -F '"' '{ print $8}')
+
 cd /home/steroid-miner/
 currentversion=$(cat 'version.txt')
 update=$((newversion-currentversion))
 #echo $update
 #exit;
-beepacct=$(head -n 1 /home/beep-email.txt)
+
 if [ "$update" -gt 0 ]
 then
         echo "Upgrade necessary"
