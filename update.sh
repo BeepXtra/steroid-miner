@@ -10,9 +10,10 @@ fi
 sudo chmod 0755 /home/beep-email.txt
 beepacct=$(head -n 1 /home/beep-email.txt)
 #machineid=$(blkid | grep -oP 'UUID="\K[^"]+' | sha256sum | awk '{print $1}');
-machineid=$(echo $(sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g') \
-                 $(ifconfig | grep -oP 'HWaddr \K.*' | sed 's/://g') | sha256sum |
-                       awk '{print $1}');
+#machineid=$(echo $(sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g') \
+#                 $(ifconfig | grep -oP 'HWaddr \K.*' | sed 's/://g') | sha256sum |
+#                       awk '{print $1}');
+machineid=$(echo $(cat /etc/machine-id));
 url='https://www.beepxtra.com/steroid-miner.php?miner='$machineid'&beeper='$beepacct;
 minerupd=$(curl -s "$url");
 newversion=$(echo $minerupd | egrep -m 1 '"version"' | awk -F '"' '{ print $4}')
