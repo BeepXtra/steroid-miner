@@ -25,4 +25,4 @@ rm mycron
 echo "if no errors above this line, installation was successful. Please update crontab"
 cd /home/steroid-miner/miner
 sudo chmod 0755 *.sh
-./solo-miner.sh
+./home/steroid-miner/miner/solo-miner.sh
