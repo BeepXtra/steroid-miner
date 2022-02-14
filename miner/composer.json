@@ -1,0 +1,15 @@
+{
+  "name": "steroid/miner",
+  "description": "A PHP miner for the Arionum cryptocurrency.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^7.2",
+    "ext-gmp": "*",
+    "ext-openssl": "*",
+    "ext-json": "*"
+  },
+  "bin": [
+    "miner"
+  ]
+}

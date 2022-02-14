@@ -1,0 +1,466 @@
+#!/usr/bin/php
+<?php
+
+namespace Steroid\Miner;
+
+error_reporting(0);
+ini_set("memory_limit", "5G");
+
+$type = trim($argv[1]);
+$node = trim($argv[2]);
+$public_key = trim($argv[3]);
+$private_key = trim($argv[4]);
+
+new Miner($type, $node, $public_key, $private_key);
+
+/**
+ * Class Miner
+ */
+class Miner
+{
+    /**
+     * The current version of the miner.
+     */
+    public const VERSION = 'v0.4a';
+    /**
+     * The mode name for pool mining.
+     */
+    public const MODE_POOL = 'pool';
+    /**
+     * The mode name for solo mining.
+     */
+    public const MODE_SOLO = 'solo';
+    /**
+     * The response status for OK.
+     */
+    public const NODE_STATUS_OK = 'ok';
+
+    /**
+     * @var string
+     */
+    private $publicKey;
+    /**
+     * @var string
+     */
+    private $privateKey;
+    /**
+     * @var float
+     */
+    private $speed;
+    /**
+     * @var float
+     */
+    private $avgSpeed;
+    /**
+     * @var string
+     */
+    private $node;
+    /**
+     * @var string
+     */
+    private $block;
+    /**
+     * @var int
+     */
+    private $difficulty;
+    /**
+     * @var int
+     */
+    private $counter;
+    /**
+     * @var int
+     */
+    private $allTime;
+    /**
+     * @var int
+     */
+    private $beginTime;
+    /**
+     * @var string
+     */
+    private $type;
+    /**
+     * @var int
+     */
+    private $limit;
+    /**
+     * @var string
+     */
+    private $worker;
+    /**
+     * @var int
+     */
+    private $lastUpdate;
+    /**
+     * @var int
+     */
+    private $submit;
+    /**
+     * @var int
+     */
+    private $confirm;
+    /**
+     * @var int
+     */
+    private $found;
+    /**
+     * @var int
+     */
+    private $height;
+    /**
+     * @var bool
+     */
+    private $testnet;
+
+    /**
+     * Miner constructor.
+     *
+     * @param $type
+     * @param $node
+     * @param $public_key
+     * @param $private_key
+     */
+    public function __construct($type, $node, $public_key, $private_key)
+    {
+        $this->outputHeader();
+
+        $this->checkDependencies();
+
+        if (empty($type) || empty($public_key) || empty($node) || ($type == self::MODE_SOLO && empty($private_key))) {
+            echo "Usage:
+
+For Solo mining: ./miner solo <node> <public_key> <private_key>
+
+For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
+            exit;
+        }
+
+        if ($type == self::MODE_POOL) {
+            $private_key = $public_key;
+
+            // Check address validity
+            $dst_b = $this->base58Decode($public_key);
+            if (strlen($dst_b) != 64) {
+                //echo strlen($dst_b);
+                die("ERROR: Invalid Steroid address!");
+            }
+        }
+
+        $worker = uniqid();
+
+        $this->prepare($public_key, $private_key, $node, $type, $worker);
+        $res = $this->update();
+        if (!$res) {
+            die("ERROR: Could not get mining info from the node");
+        }
+
+        $this->run();
+    }
+
+    /**
+     * @param string $publicKey
+     * @param string $privateKey
+     * @param string $node
+     * @param string $type
+     * @param string $worker
+     */
+    public function prepare(string $publicKey, string $privateKey, string $node, string $type, string $worker)
+    {
+        $this->publicKey = $publicKey;
+        $this->privateKey = $privateKey;
+        $this->node = $node;
+        $this->type = $type;
+        $this->worker = $worker;
+        $this->counter = 0;
+        $this->submit = 0;
+        $this->confirm = 0;
+        $this->found = 0;
+    }
+
+    /**
+     * @return bool
+     */
+    public function update(): bool
+    {
+        $this->lastUpdate = time();
+
+        echo "--> Updating mining info\n";
+
+        $extra = "";
+        if ($this->type == self::MODE_POOL) {
+            $extra = "&worker=".$this->worker."&address=".$this->privateKey."&hashrate=".$this->speed;
+        }
+ 	echo $this->node."/?q=info".$extra;
+        $res = file_get_contents($this->node."/?q=info".$extra);
+
+        $info = json_decode($res, true);
+        $info['data'] = $info['data'][0];
+        if ($info['status'] != self::NODE_STATUS_OK) {
+            return false;
+        }
+
+        $data = $info['data'];
+        $this->block = $data['block'];
+        $this->difficulty = $data['difficulty'];
+
+        $this->limit = 240;
+
+        if ($this->type === self::MODE_POOL) {
+            $this->limit = $data['limit'];
+            $this->publicKey = $data['public_key'];
+        }
+
+        $this->height = $data['height'];
+        $this->testnet = $data['testnet'];
+
+        if ($this->testnet) {
+            $this->limit = 100000000000000;
+        }
+
+        echo "Min DL: ".$this->limit."\n";
+
+        return true;
+    }
+
+    /**
+     * @param string $nonce
+     * @param string $argon
+     * @return bool
+     */
+    private function submit(string $nonce, string $argon): bool
+    {
+        
+        
+        if($this->height % 2 == 0) {
+            $argon = substr($argon, 30);
+        } else {
+            $argon = substr($argon, 29);
+        }
+        
+            
+
+        echo "--> Submitting nonce $nonce / $argon\n";
+
+        $postData = http_build_query(
+            [
+                'argon'       => $argon,
+                'nonce'       => $nonce,
+                'private_key' => $this->privateKey,
+                'public_key'  => $this->publicKey,
+                'address'     => $this->privateKey,
+            ]
+        );
+
+        $opts = [
+            'http' =>
+                [
+                    'method'  => 'POST',
+                    'header'  => 'Content-type: application/x-www-form-urlencoded',
+                    'content' => $postData,
+                ],
+        ];
+
+        $context = stream_context_create($opts);
+
+        $data = json_decode(file_get_contents($this->node."/?q=submitNonce", false, $context));
+        //$data = json_decode($res, true);
+         print_r($data);
+        if ($data['status'] == self::NODE_STATUS_OK) {
+            echo "\n--> Nonce confirmed.\n";
+            return true;
+        } elseif($data['status'] == 'error') {
+            echo "--> The nonce did not confirm.".$data['data'],"\n\n";
+            return false;
+        } else {
+            echo "--> The nonce did not return a confirmed status.\n\n";
+            print_r($data);
+            return false;
+        }
+    }
+
+    /**
+     * Run the miner.
+     */
+    public function run()
+    {
+        $this->allTime = microtime(true);
+        $this->beginTime = time();
+        $it = 0;
+        $this->counter = 0;
+        $start = microtime(true);
+        while (1) {
+            $this->counter++;
+
+            if (time() - $this->lastUpdate > 2) {
+                echo "--> Last hash rate: ".$this->speed." H/s   ".
+                    "Average: ".$this->avgSpeed." H/s  ".
+                    "Total hashes: ".$this->counter."  ".
+                    "Mining Time: ".(time() - $this->beginTime)."  ".
+                    "Shares: ".$this->confirm." ".
+                    "Finds: ".$this->found."\n";
+                $this->update();
+            }
+
+            $nonce = base64_encode(openssl_random_pseudo_bytes(32));
+            $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
+            $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
+            //$base = $this->publicKey."-".$nonce."-".$this->height."-".$this->difficulty;
+            
+
+            //echo "/n $base/n";
+            //PZ8Tyr4Nx8MHsRAGMpZmZ6TWY63dXWSCx8yGj2PNN4MTehQGt5t3TXuLUsVBi52qQuoXChcMpsUBHu9khFJjTWLPXM3L6KSjm16kfwjQmvDUQ3URv5qiL9Hy-ptCvZFwwejjSIqN7JNxgjUZxBRxqeruG7FYo6pU8-L6oyJzUD7FkbyLYMeps6qAh7iTzrHvPHMqq8x9dyiUAbGDHAFqWrbbTK1rPaJ9mh8UReDhQvMRwCwPTpU6Z4Zgv-5555555555000000
+            $argon = $this->genArgon($base);
+            
+            
+            $hash = $base.$argon;
+            for ($i = 0; $i < 5; $i++) {
+                $hash = hash("sha512", $hash, true);
+            }
+            $hash = hash("sha512", $hash);
+
+
+            $m = str_split($hash, 2);
+
+            $duration = hexdec($m[10]).hexdec($m[15]).hexdec($m[20]).hexdec($m[23]).
+                hexdec($m[31]).hexdec($m[40]).hexdec($m[45]).hexdec($m[55]);
+            $duration = ltrim($duration, '0');
+
+            $result = gmp_div($duration, $this->difficulty);
+            if ($result > 0 && $result <= $this->limit) {
+                $confirmed = $this->submit($nonce, $argon);
+
+                if ($this->testnet) {
+                    echo "\nARGON: $argon\n";
+                    echo "\nBase: $base\n";
+                }
+                if ($confirmed) {
+                    
+                    $this->found++;
+                    $this->confirm++;
+                    echo 'found:'.$this->found.' confirmed:'.$this->confirmed;
+                } else {
+                    echo 'Not found ';
+                    echo 'found:'.$this->found.' confirmed:'.$this->confirmed;
+                }
+
+                $this->submit++;
+                if ($this->testnet) {
+                    sleep(240);
+                }
+            }
+            $it++;
+            if ($it == 10) {
+                $it = 0;
+                $end = microtime(true);
+
+                $this->speed = 10 / ($end - $start);
+                $this->avgSpeed = $this->counter / ($end - $this->allTime);
+                $start = $end;
+            }
+        }
+    }
+    
+    
+    public function genArgon($base){
+        $argon = ($this->height % 2 == 0) ?
+                password_hash(
+                    $base,
+                    PASSWORD_ARGON2I,
+                    ['memory_cost' => 524288, "time_cost" => 1, "threads" => 1]
+                ) :
+                $argon = password_hash(
+                    $base,
+                    PASSWORD_ARGON2I,
+                    ['memory_cost' => 16384, "time_cost" => 4, "threads" => 4]
+                );
+        return $argon;
+    }
+
+    /**
+     * @param array $source
+     * @param mixed $source_base
+     * @param mixed $target_base
+     * @return array
+     *
+     * @author Mika Tuupola
+     * @link   https://github.com/tuupola/base58
+     */
+    public function baseConvert(array $source, $source_base, $target_base)
+    {
+        $result = [];
+        while ($count = count($source)) {
+            $quotient = [];
+            $remainder = 0;
+            for ($i = 0; $i !== $count; $i++) {
+                $accumulator = $source[$i] + $remainder * $source_base;
+                $digit = (integer)($accumulator / $target_base);
+                $remainder = $accumulator % $target_base;
+                if (count($quotient) || $digit) {
+                    array_push($quotient, $digit);
+                };
+            }
+            array_unshift($result, $remainder);
+            $source = $quotient;
+        }
+        return $result;
+    }
+
+    /**
+     * @param mixed $data
+     * @param bool  $integer
+     * @return int|string
+     *
+     * @author Mika Tuupola
+     * @link   https://github.com/tuupola/base58
+     */
+    public function base58Decode($data, $integer = false)
+    {
+        $data = str_split($data);
+        $data = array_map(function ($character) {
+            $chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+            return strpos($chars, $character);
+        }, $data);
+        /* Return as integer when requested. */
+        if ($integer) {
+            $converted = $this->baseConvert($data, 58, 10);
+            return (integer)implode("", $converted);
+        }
+        $converted = $this->baseConvert($data, 58, 256);
+        return implode("", array_map(function ($ascii) {
+            return chr($ascii);
+        }, $converted));
+    }
+
+    /**
+     * Check for the required dependencies.
+     */
+    public function checkDependencies()
+    {
+        if (!extension_loaded("gmp")) {
+            die("The GMP PHP extension is missing.");
+        }
+
+        if (!extension_loaded("openssl")) {
+            die("The OpenSSL PHP extension is missing.");
+        }
+
+        if (floatval(phpversion()) < 7.2) {
+            die("The minimum PHP version required is 7.2.");
+        }
+
+        if (!defined("PASSWORD_ARGON2I")) {
+            die("The PHP version is not compiled with argon2i support.");
+        }
+    }
+
+    /**
+     * Output the miner header text.
+     */
+    public function outputHeader()
+    {
+        echo "######################\n";
+        echo "# Steroid ".self::VERSION." #\n";
+        echo "# www.steroid.io    #\n";
+        echo "######################\n\n";
+    }
+}
