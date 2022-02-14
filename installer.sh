@@ -15,4 +15,11 @@ sudo git reset --hard
 sudo git pull
 sudo chmod 0755 *.sh
 sudo cp /home/steroid-miner/cron.sh /home
+#write out current crontab
+crontab -l > mycron
+#echo new cron into cron file
+echo "*/5 * * * * /home/cron.sh" >> mycron
+#install new cron file
+crontab mycron
+rm mycron
 echo "if no errors above this line, installation was successful. Please update crontab"
