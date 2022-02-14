@@ -2,6 +2,7 @@
  
 sudo apt install tasksel
 sudo tasksel install lamp-server
+sudo apt-get install php7.4-gmp
 echo "What is the email of the beep account for this miner?"
 read varname
 echo "setting up mining account for " $varname
