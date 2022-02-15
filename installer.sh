@@ -17,9 +17,13 @@ sudo chmod 0755 *.sh
 sudo cp /home/steroid-miner/cron.sh /home
 
 crontab -l | { cat; echo "*/5 * * * * /home/cron.sh"; } | crontab -
+ 
+echo "Cron Created .."
 
 
-echo "if no errors above this line, installation was successful. Please update crontab"
 cd /home/steroid-miner/miner
 sudo chmod 0755 *.sh
-./solo-miner.sh
+
+details = `start-solo.sh`
+echo $details
+ 
