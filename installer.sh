@@ -23,7 +23,7 @@ echo "Cron Created .."
 
 cd /home/steroid-miner/miner
 sudo chmod 0755 *.sh
-
+echo $PWD
 details = `start-solo.sh`
 echo $details
  
