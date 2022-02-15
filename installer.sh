@@ -22,4 +22,4 @@ crontab -l | { cat; echo "*/5 * * * * /home/cron.sh"; } | crontab -
 echo "if no errors above this line, installation was successful. Please update crontab"
 cd /home/steroid-miner/miner
 sudo chmod 0755 *.sh
-./home/steroid-miner/miner/solo-miner.sh
+./solo-miner.sh
