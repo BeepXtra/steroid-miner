@@ -13,7 +13,7 @@ read varname
 echo "setting up mining account for " $varname
 sudo chmod 0777 /home
 sudo echo $varname > /home/beep-email.txt
-sudo echo ifconfig  | grep ether | awk '{print $2}' > /home/beep-mac.txt
+ ifconfig  | grep ether | awk '{print $2}' | tee  /home/beep-mac.txt
 sudo chmod 0755 /home/beep-email.txt
 cd /home/steroid-miner/
 sudo git reset --hard
