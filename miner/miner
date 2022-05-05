@@ -203,7 +203,8 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         $this->block = $data['block'];
         $this->difficulty = $data['difficulty'];
 
-        $this->limit = 240;
+        //$this->limit = 240;
+        $this->limit = $data['difficulty']*10000;
 
         if ($this->type === self::MODE_POOL) {
             $this->limit = $data['limit'];
@@ -230,7 +231,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
     private function submit(string $nonce, string $argon): bool
     {
         
-        
+        //echo "-->Submitting argon: ".$argon." \n";
         if($this->height % 2 == 0) {
             $argon = substr($argon, 30);
         } else {
@@ -264,17 +265,17 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
 
         $data = json_decode(file_get_contents($this->node."/?q=submitNonce", false, $context));
         //$data = json_decode($res, true);
-         print_r($data);
-        if ($data['status'] == self::NODE_STATUS_OK) {
+        // print_r($data);
+        if ($data->status == self::NODE_STATUS_OK) {
             echo "\n--> Nonce confirmed.\n";
             return true;
-        } elseif($data['status'] == 'error') {
-            echo "--> The nonce did not confirm.".$data['data'],"\n\n";
+        } elseif($data->status == 'error') {
+            echo "--> The nonce did not confirm.".$data->data,"\n\n";
             return false;
         } else {
-            echo "--> The nonce did not return a confirmed status.\n\n";
+            echo "--> The nonce did not return a confirmed status yet but is correct.\n\n";
             print_r($data);
-            return false;
+            return true;
         }
     }
 
@@ -297,13 +298,15 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
                     "Total hashes: ".$this->counter."  ".
                     "Mining Time: ".(time() - $this->beginTime)."  ".
                     "Shares: ".$this->confirm." ".
-                    "Finds: ".$this->found."\n";
+                    "Finds: ".$this->found." ".
+                    "Diff: ".$this->difficulty."\n";
                 $this->update();
             }
 
             $nonce = base64_encode(openssl_random_pseudo_bytes(32));
             $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
             $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
+            //echo "------>BASE :".$base."\n";
             //$base = $this->publicKey."-".$nonce."-".$this->height."-".$this->difficulty;
             
 
@@ -324,8 +327,9 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $duration = hexdec($m[10]).hexdec($m[15]).hexdec($m[20]).hexdec($m[23]).
                 hexdec($m[31]).hexdec($m[40]).hexdec($m[45]).hexdec($m[55]);
             $duration = ltrim($duration, '0');
-
+            
             $result = gmp_div($duration, $this->difficulty);
+            //echo "\n\n-->Duration: ".$duration."  \n -->gmp_div:".$result."\n";
             if ($result > 0 && $result <= $this->limit) {
                 $confirmed = $this->submit($nonce, $argon);
 
